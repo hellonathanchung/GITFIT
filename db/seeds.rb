@@ -12,9 +12,9 @@ crunches = Exercise.create(name: 'Crunches', description: 'The crunch is a class
 # pull_up = Exercise.create(name: 'Pull Up')
 
 # one whole session
-workout1 = Workout.create(user_id: 1, exercise_id: 1, sets: 20, reps: 5)
-workout2 = Workout.create(user_id: 1, exercise_id: 2, sets: 10, reps: 10)
-workout3 = Workout.create(user_id: 1, exercise_id: 3, sets: 20, reps: 20)
-workout4 = Workout.create(user_id: 1, exercise_id: 4, sets: 10, reps: 20)
-workout5 = Workout.create(user_id: 1, exercise_id: 5, sets:5, reps: 20)
-workout6 = Workout.create(user_id: 1, exercise_id: 6, sets:5, reps: 20)
+workout1 = Workout.create(session_id: 1, exercise_id: 1, sets: 20, reps: 5)
+workout2 = Workout.create(session_id: 1, exercise_id: 2, sets: 10, reps: 10)
+workout3 = Workout.create(session_id: 1, exercise_id: 3, sets: 20, reps: 20)
+workout4 = Workout.create(session_id: 1, exercise_id: 4, sets: 10, reps: 20)
+workout5 = Workout.create(session_id: 1, exercise_id: 5, sets:5, reps: 20)
+workout6 = Workout.create(session_id: 1, exercise_id: 6, sets:5, reps: 20)
