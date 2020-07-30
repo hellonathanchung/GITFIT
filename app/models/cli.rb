@@ -34,7 +34,7 @@ class CLI #class for CLI
     ##################################################
 
     def menu
-        system "clear"
+        # system "clear"
         puts ("
 ███╗   ███╗ █████╗ ██╗███╗   ██╗    ███╗   ███╗███████╗███╗   ██╗██╗   ██╗
 ████╗ ████║██╔══██╗██║████╗  ██║    ████╗ ████║██╔════╝████╗  ██║██║   ██║
@@ -61,7 +61,8 @@ class CLI #class for CLI
         prompt = TTY::Prompt.new
         age = prompt.ask("How old are you?")
     end
- 
+
+
     def ask_fitness_level #done
         prompt = TTY::Prompt.new
         fitness_level = prompt.select("How fit are you") do |menu|
@@ -77,7 +78,7 @@ class CLI #class for CLI
     
     def new_session
         system "clear"
-        make_a_session = Session.create(user_id: $user.id)
+        make_a_session = Session.create(user_id: $user.id, name:Time.now)
         prompt = TTY::Prompt.new
         puts ("
 ██╗     ███████╗████████╗███████╗     ██████╗ ███████╗████████╗    ███████╗████████╗ █████╗ ██████╗ ████████╗███████╗██████╗ 
@@ -116,14 +117,29 @@ class CLI #class for CLI
             input = gets.chomp.downcase
         end
 
-        puts "Would you like to name this section?"
-        Session.last
-        
-        system "clear"
+        answer = prompt.ask("Would you like to name this session?")
+        if answer == "yes"
+            name_session
+            puts "Your session name is #{Session.last.name}"
+        else
+            puts "Your session name is #{Session.last.name}"
+        end
+        # system "clear"
         puts "Sending you back to main menu"
-        sleep 3
+        sleep 5
 
         # new_workout = Exercise.create()
+    end
+
+    def name_session
+        prompt = TTY::Prompt.new
+        answer = prompt.ask("What would you like to name this session?")
+        $user.sessions.last.update(name: answer)
+        puts "Your session is now named #{answer}"
+        sleep 3
+        # system "clear"
+        puts "Sending you back to main menu"
+        menu
     end
 
     def read_exercises 
@@ -142,23 +158,38 @@ class CLI #class for CLI
         
         selected_exercise = Exercise.find_by({id:exercise_choice[:value]})
         # binding.pry
-            puts ("Exercise |#{selected_exercise.name}
-             Body Part | #{selected_exercise.body_part}
-             Description | #{selected_exercise.description}")
+            puts ("
+            Exercise |#{selected_exercise.name}
+            Body Part |#{selected_exercise.body_part}
+            Description |#{selected_exercise.description}")
 
         puts "Would you like to read about another exercise?"
-  
         input = gets.chomp.downcase
         if input == "yes"
-            read_exercisese
+            read_exercises
         else 
             menu
         end
     end
 
     def review_previous_sessions
-        system "clear"
-        session = Session.all.find_by($user.id)
-        session.user.sessions.last
+        # binding.pry
+        prompt = TTY::Prompt.new
+        previous_sessions = Session.all.select{|session| session.user_id = $user.id}
+        # session.each {|session| puts}
+
+        puts "you have #{previous_sessions.count} sessions"
+        list_of_previous_sessions= previous_sessions.map {|session| "#{session.name}"}
+
+        selected_session = prompt.select("Please choose a session to review", list_of_previous_sessions)
+        current_session = Session.all.find_by(name:selected_session)
+
+        current_session.workouts.each {|workouts| puts "#{ workouts.exercise.name} sets: #{workouts.sets} reps: #{workouts.reps}"}
+        
+        prompt.select("What would you like to do?") do |menu|
+            menu.enum "."
+            menu.choice "Edit current session"
+            menu.choice "Edit current session"
+        # binding.pry
     end
 end
