@@ -5,5 +5,5 @@ require 'tty-prompt'
 cli = CLI.new
 
 cli.welcome
-cli.menu
+cli.main_menu
 cli.exit_method

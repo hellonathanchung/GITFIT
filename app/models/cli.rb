@@ -1,3 +1,4 @@
+
 require "tty-prompt"
 class CLI #class for CLI 
 
@@ -12,13 +13,13 @@ class CLI #class for CLI
              ╚═════╝ ╚═╝   ╚═╝   ╚═╝     ╚═╝   ╚═╝   
              ")
         puts "Hello! Welcome to GitFIT!"
-        
-            puts "please enter a username"
+        puts "Please enter a username"
             username = gets.chomp.downcase.titleize
             
             if User.exists?(name: username)
-                @user = User.find_by(name:username)
+                @user = User.find_by(name: username)
                 puts "Looks like you have an account, #{@user.name}. Let's take you the main menu."
+                sleep 2
             else
                 User.create(name: username)
                 puts "Welcome! Looks like this is your first time."
@@ -27,18 +28,17 @@ class CLI #class for CLI
                 fitness_level = ask_fitness_level #gets fitness level
                 @user =User.create(name:username, age: age, fitness_level: fitness_level)
                 puts "Account sucessfully created. Welcome to GitFIT #{username}."
-                # 
-                
+                sleep 2
             end
     end
     ##################################################
 
-    def menu
+    def main_menu
         # system "clear"
         puts ("
 ███╗   ███╗ █████╗ ██╗███╗   ██╗    ███╗   ███╗███████╗███╗   ██╗██╗   ██╗
 ████╗ ████║██╔══██╗██║████╗  ██║    ████╗ ████║██╔════╝████╗  ██║██║   ██║
-██╔████╔██║███████║██║██╔██╗ ██║    ██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║
+██╔████╔██║███████║██║██╔██╗ ██║    ██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║3
 ██║╚██╔╝██║██╔══██║██║██║╚██╗██║    ██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║
 ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║    ██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝
 ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ 
@@ -91,15 +91,15 @@ class CLI #class for CLI
         sleep 1
         system "clear"
         puts "Let's select a workout"
-# 
         new_workout
-        menu
+        main_menu
     end
 
     def new_workout
         input = nil
         until input == "no" do
             prompt = TTY::Prompt.new
+            # system "clear"
             exercise_choice = prompt.select("What exercise would you like to do?") do |menu|
                 menu.enum "."
                                     
@@ -109,10 +109,15 @@ class CLI #class for CLI
                 menu.choice "leg raises", value: 4
                 menu.choice "crunches", value: 5 
                 menu.choice "jumping jacks", value: 6
+                menu.choice "exit"
             end
             number_of_reps = prompt.ask("How many reps did you do?")
-            number_of_sets = prompt.ask("How many sets did you do?")            
+            puts "You did #{number_of_reps} reps"
+            number_of_sets = prompt.ask("How many sets did you do?") 
+            puts "You did #{number_of_sets} sets"
+
             create_workout = Workout.create(session_id: @user.sessions.last.id, exercise_id:exercise_choice[:value], sets:number_of_sets, reps:number_of_reps)
+            system "clear"
             puts "Would you like to add another?"
             input = gets.chomp.downcase
         end
@@ -139,11 +144,11 @@ class CLI #class for CLI
         puts "Your session is now named #{answer}"
         sleep 3
         # system "clear"
-        menu
+        main_menu
         else
         puts "Sending you back to main menu"
         sleep 1
-        menu
+        main_menu
         end
     end
 
@@ -162,62 +167,105 @@ class CLI #class for CLI
         end
         
         selected_exercise = Exercise.find_by({id:exercise_choice[:value]})
-        # 
+        system "clear"
             puts "Exercise : #{selected_exercise.name}"
             puts "Body Part : #{selected_exercise.body_part}"
             puts "Description : #{selected_exercise.description}"
+            puts ""
 
-        puts "Would you like to read about another exercise?"
-        input = gets.chomp.downcase
-        if input == "yes"
-            read_exercises
-        else 
-            menu
+        prompt.select("Would you like to read about another exercise?") do |menu|
+        menu.choice "yes",->{read_exercises}
+        menu.choice "no",->{main_menu}
         end
     end
 
     def review_previous_sessions
-        # 
         prompt = TTY::Prompt.new
-        @previous_sessions = Session.all.select{|session| session.user_id == @user.id}
-        # session.each {|session| puts}
-
-        puts "you have #{@previous_sessions.count} sessions"
-        list_of_previous_sessions= @previous_sessions.map {|session| "#{session.name}"}
-        selected_session = prompt.select("Please choose a session to review", list_of_previous_sessions)
-        current_session = Session.all.find_by(name:selected_session)
-
-        @workout_info = current_session.workouts.each {|workouts| puts "#{ workouts.exercise.name} sets: #{workouts.sets} reps: #{workouts.reps}"}
         
-        
-        prompt.select("What would you like to edit?") do |menu|
-            menu.enum "."
-            menu.choice "Edit current session",-> {edit_session}
-            menu.choice "Delete a session",-> {delete_session}
-            menu.choice "Review other sessions",-> {review_previous_sessions}
-            menu.choice "Exit"
+        # binding.pry
+        if Session.all.select{|session| session.user_id == @user.id} == []
+            # binding.pry
+            puts "You have no previous sessions"
+            sleep 2
+            prompt.select("What would you like to do") do |menu|
+                menu.choice "Start a session",-> {new_session}
+                menu.choice "Return to menu",->{main_menu}
+            end
+        else 
+            @previous_sessions = Session.all.select{|session| session.user_id == @user.id}
+            # session.each {|session| puts}
+
+            puts "you have #{@previous_sessions.count} sessions"
+            list_of_previous_sessions= @previous_sessions.map {|session| "#{session.name}"}
+            selected_session = prompt.select("Please choose a session to review", list_of_previous_sessions)
+            current_session = Session.all.find_by(name:selected_session)
+
+            @workout_info = current_session.workouts.each {|workouts| puts "#{ workouts.exercise.name} sets: #{workouts.sets} reps: #{workouts.reps}"}
+            
+            
+            prompt.select("What would you like to edit?") do |menu|
+                menu.enum "."
+                menu.choice "Edit current session",-> {edit_session}
+                menu.choice "Delete a session",-> {delete_session}
+                menu.choice "Review other sessions",-> {review_previous_sessions}
+                menu.choice "Return to main menu",->{main_menu}
+            end
         end
     end
 
     def edit_session
+
+        #this is where i'd ask "what workout would you like to edit?
+        #lists the workouts by Session.all.find_by(user_id: = @user.id)
+        #choose the workout to edit and then go into which exercise you'd like to edit
         prompt = TTY::Prompt.new
         session = Session.last
 
         answer = prompt.select("What would you like to edit?") do |menu|
             menu.choice name: "reps",  value: 1
             menu.choice name: "sets", value: 2
+            menu.choice name: "add a workout", value: 3
+            menu.choice name: "Nevermind, return to menu", value: 4
           end
-        #   binding.pry
 
           if answer == 1
             update_reps
           elsif answer == 2
             update_sets
+          elsif answer == 3 
+            prompt = TTY::Prompt.new
+            input = nil
+            until input == "no" do
+                exercise_choice = prompt.select("What exercise would you like to do?") do |menu|
+                    menu.enum "."
+                                        
+                    menu.choice "push-ups", value: 1 
+                    menu.choice "pull-ups", value: 2
+                    menu.choice "squats", value: 3
+                    menu.choice "leg raises", value: 4
+                    menu.choice "crunches", value: 5 
+                    menu.choice "jumping jacks", value: 6
+                end
+                number_of_reps = prompt.ask("How many reps did you do?")
+                puts "You did #{number_of_reps} reps"
+
+                number_of_sets = prompt.ask("How many sets did you do?") 
+                puts "You did #{number_of_sets} sets"
+
+                create_workout = Workout.create(session_id: @user.sessions.last.id, exercise_id:exercise_choice[:value], sets:number_of_sets, reps:number_of_reps)
+                puts "Would you like to add another?"
+                input = gets.chomp.downcase
+            end 
+            puts "Sending you to main menu"
+            main_menu
+          elsif answer == 4 
+          main_menu
           else
             puts "Hm, please try again"
             edit_session
           end
     end
+
 
     def update_reps 
         puts "What you like to your sets to to? "
@@ -225,9 +273,8 @@ class CLI #class for CLI
         @user.sessions.last.workouts.last.update({reps:answer})
         sleep 2 
         puts "Your reps have been updated to #{answer} reps"
-        puts "Sending you to main menu"
-        sleep 3
-        menu
+        sleep 2
+        edit_session
     end
 
 
@@ -236,27 +283,35 @@ class CLI #class for CLI
         answer = gets.chomp
         @user.sessions.last.workouts.last.update({sets:answer})
         puts "Your reps have been updated to #{answer} sets"
-        puts "Sending you to main menu"
-        sleep 3
-        menu
+        # puts "Sending you to main menu"
+        sleep 2
+        edit_session
     end
 
     def delete_session
         prompt = TTY::Prompt.new
+# binding.pry
+        if Session.all.select{|session| session.user_id == @user.id} == []
+            # binding.pry
+            puts "You have no previous sessions to delete"
+            sleep 2
+            prompt.select("What would you like to do") do |menu|
+                menu.choice "Start a session",-> {new_session}
+                menu.choice "Return to menu",->{main_menu}
+            end
+        else
+            @previous_sessions = Session.all.select{|session| session.user_id == @user.id}
+            list_of_previous_sessions = @previous_sessions.map {|session| session.name}
+            selected_session = prompt.select("Please choose a session to delete", list_of_previous_sessions)
+            
 
-        
-        Session.all.find_by(user_id: @user.id)
-
-        list_of_previous_sessions = @previous_sessions.map {|session| session.name}
-        selected_session = prompt.select("Please choose a session to delete", list_of_previous_sessions)
-
-        session_to_delete = Session.all.find_by(name:selected_session)
-        answer = prompt.select("Are you sure?") do |menu|
-            menu.choice "yes"
-            menu.choice "no"
-        # binding.pry
+            session_to_delete = Session.all.find_by(name:selected_session)
+            answer = prompt.select("Are you sure?") do |menu|
+                menu.choice "yes"
+                menu.choice "no"
+            # binding.pry
+            end
         end
-
         if answer == 'yes' 
             session_to_delete.destroy
             puts ("   
@@ -268,10 +323,10 @@ class CLI #class for CLI
                                                                                                                                    
     This session has been deleted")
             puts "returning to main menu"
-            sleep 5
+            sleep 2
 
         end
-        menu
+        main_menu
     end
 
 
