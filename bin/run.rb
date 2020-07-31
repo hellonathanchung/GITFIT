@@ -6,3 +6,4 @@ cli = CLI.new
 
 cli.welcome
 cli.menu
+cli.exit_method
