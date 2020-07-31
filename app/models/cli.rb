@@ -117,8 +117,9 @@ class CLI #class for CLI
             puts "You did #{number_of_sets} sets"
 
             create_workout = Workout.create(session_id: @user.sessions.last.id, exercise_id:exercise_choice[:value], sets:number_of_sets, reps:number_of_reps)
+            sleep 2
             system "clear"
-            puts "Would you like to add another?"
+            puts "Would you like to add another workout?"
             input = gets.chomp.downcase
         end
 
@@ -253,7 +254,7 @@ class CLI #class for CLI
                 puts "You did #{number_of_sets} sets"
 
                 create_workout = Workout.create(session_id: @user.sessions.last.id, exercise_id:exercise_choice[:value], sets:number_of_sets, reps:number_of_reps)
-                puts "Would you like to add another?"
+                puts "Would you like to add another workout?"
                 input = gets.chomp.downcase
             end 
             puts "Sending you to main menu"
