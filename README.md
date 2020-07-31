@@ -2,7 +2,7 @@ Module One Final Project: GITFIT
 ========================
 
 ## Project Details
-GITFIT is a CLI application that allows to do three core things:
+GITFIT is a CLI application that allows users to do three core things:
 1. Create an account that stores workout data
 2. Create, edit, reviwe, and delete workout session data such as reps, sets, and exercises done
 3. Learn and read about exercises to push themselves harder than they have before.
