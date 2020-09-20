@@ -4,7 +4,7 @@ Module One Final Project: GITFIT
 ## Project Details
 GITFIT is a CLI application that allows users to do three core things:
 1. Create an account that stores workout data
-2. Create, edit, reviwe, and delete workout session data such as reps, sets, and exercises done
+2. Create, edit, review, and delete workout session data such as reps, sets, and exercises done
 3. Learn and read about exercises to push themselves harder than they have before.
 
 The goal of this app is to track the workout for you so you can focus on maximizing your self.
